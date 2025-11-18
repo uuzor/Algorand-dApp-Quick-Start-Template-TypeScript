@@ -50,6 +50,12 @@ export default function Landing() {
               >
                 Roadmap
               </a>
+              <Link
+                to="/marketplace"
+                className="text-gray-300 hover:text-white transition-colors"
+              >
+                Marketplace
+              </Link>
               <a
                 href="#founder"
                 className="text-gray-300 hover:text-white transition-colors"
