@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Home from './Home'
 import Landing from './Landing'
 import MarketplacePage from './pages/MarketplacePage'
+import DashboardPage from './pages/DashboardPage'
 import { getAlgodConfigFromViteEnvironment, getKmdConfigFromViteEnvironment } from './utils/network/getAlgoClientConfigs'
 import { Analytics } from '@vercel/analytics/react'
 
@@ -60,6 +61,7 @@ export default function App() {
             <Route path="/" element={<Landing />} />
             <Route path="/app" element={<Home />} />
             <Route path="/marketplace" element={<MarketplacePage />} />
+            <Route path="/dashboard" element={<DashboardPage />} />
           </Routes>
         </BrowserRouter>
         <Analytics />

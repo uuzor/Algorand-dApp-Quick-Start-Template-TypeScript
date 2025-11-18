@@ -56,16 +56,12 @@ export default function Landing() {
               >
                 Marketplace
               </Link>
-              <a
-                href="#founder"
+              <Link
+                to="/dashboard"
                 className="text-gray-300 hover:text-white transition-colors"
-                onClick={(e) => {
-                  e.preventDefault()
-                  document.getElementById('founder')?.scrollIntoView({ behavior: 'smooth' })
-                }}
               >
-                Team
-              </a>
+                Dashboard
+              </Link>
               <a
                 href="https://docs.taskeronchain.com"
                 target="_blank"
