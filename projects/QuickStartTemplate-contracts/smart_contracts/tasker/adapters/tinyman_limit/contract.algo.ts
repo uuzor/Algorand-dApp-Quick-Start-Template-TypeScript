@@ -1,30 +1,4 @@
-import { Contract } from '@algorandfoundation/algorand-typescript'
-
-/**
- * CanExecuteResult - Result of condition checking
- */
-class CanExecuteResult {
-  canExecute: boolean
-  reason: string
-
-  constructor(canExecute: boolean, reason: string) {
-    this.canExecute = canExecute
-    this.reason = reason
-  }
-}
-
-/**
- * ExecuteResult - Result of action execution
- */
-class ExecuteResult {
-  success: boolean
-  resultData: bytes
-
-  constructor(success: boolean, resultData: bytes) {
-    this.success = success
-    this.resultData = resultData
-  }
-}
+import { BaseAdapter, TokenRequirement, CanExecuteResult, ExecuteResult, AdapterMetadata } from '../base_adapter.algo'
 
 /**
  * TinymanLimitOrderParams - Parameters for limit order
@@ -61,18 +35,14 @@ class TinymanLimitOrderParams {
 /**
  * TinymanLimitOrderAdapter - Execute limit orders on Tinyman DEX
  *
- * This adapter demonstrates the core pattern:
- * 1. canExecute() checks if current price meets limit conditions
- * 2. execute() performs the actual swap via inner transactions
+ * This adapter demonstrates the improved pattern with getTokenRequirements():
+ * 1. getTokenRequirements() declares what tokens are needed (no hardcoded structure!)
+ * 2. canExecute() checks if current price meets limit conditions
+ * 3. execute() performs the actual swap via inner transactions
  *
  * For production, this would integrate with actual Tinyman v2 contracts
  */
-export class TinymanLimitOrderAdapter extends Contract {
-  // Global state
-  admin = GlobalStateKey<Address>({ key: 'admin' })
-  totalExecutions = GlobalStateKey<uint64>({ key: 'total_executions' })
-  successfulExecutions = GlobalStateKey<uint64>({ key: 'successful_executions' })
-
+export class TinymanLimitOrderAdapter extends BaseAdapter {
   // Configuration
   tinymanValidatorAppId = GlobalStateKey<uint64>({ key: 'tinyman_validator' })
   maxSlippageBps = GlobalStateKey<uint16>({ key: 'max_slippage_bps' }) // Maximum allowed slippage
@@ -81,11 +51,37 @@ export class TinymanLimitOrderAdapter extends Contract {
    * Initialize the adapter
    */
   createApplication(tinymanValidatorApp: uint64): void {
-    this.admin.value = this.txn.sender
-    this.totalExecutions.value = 0
-    this.successfulExecutions.value = 0
+    this.initializeBase() // Initialize BaseAdapter state
     this.tinymanValidatorAppId.value = tinymanValidatorApp
     this.maxSlippageBps.value = 500 // 5% default max slippage
+  }
+
+  /**
+   * Get token requirements for this limit order
+   *
+   * This is the KEY IMPROVEMENT: TaskVault can now ask the adapter
+   * what tokens it needs WITHOUT parsing TinymanLimitOrderParams!
+   *
+   * @param actionParams - Encoded TinymanLimitOrderParams
+   * @returns Array with single TokenRequirement (the input token)
+   */
+  getTokenRequirements(actionParams: bytes): TokenRequirement[] {
+    // Decode OUR parameters (TaskVault doesn't need to know this structure!)
+    // TODO: Implement proper ABI decoding
+    // For now, parse the first fields we need
+
+    // In production, this would be:
+    // const params = abi.decode(actionParams, TinymanLimitOrderParams)
+    // const requirements = [new TokenRequirement(params.fromAssetId, params.amount, true)]
+
+    // Placeholder: Assume ALGO → USDC swap
+    const fromAssetId: uint64 = 0 // ALGO
+    const amount: uint64 = 1000000 // 1 ALGO
+
+    const requirements: TokenRequirement[] = []
+    requirements.push(new TokenRequirement(fromAssetId, amount, true))
+
+    return requirements
   }
 
   /**
@@ -139,10 +135,12 @@ export class TinymanLimitOrderAdapter extends Contract {
    * This is called after canExecute() returns true.
    * Performs the actual swap via Tinyman contracts.
    *
+   * @param vaultAddress - Address of the TaskVault calling this adapter
    * @param actionParams - Encoded TinymanLimitOrderParams
    * @returns ExecuteResult with success status and data
    */
-  execute(actionParams: bytes): ExecuteResult {
+  execute(vaultAddress: Address, actionParams: bytes): ExecuteResult {
+    this.requireNotPaused()
     // Decode parameters
     // TODO: Parse actionParams into TinymanLimitOrderParams struct
 
@@ -168,12 +166,12 @@ export class TinymanLimitOrderAdapter extends Contract {
 
     const swapSuccess = this.executeTinymanSwap(fromAssetId, toAssetId, amount, slippageBps, poolAppId)
 
+    // Record execution using BaseAdapter method
+    this.recordExecution(swapSuccess)
+
     if (swapSuccess) {
-      this.totalExecutions.value = this.totalExecutions.value + 1
-      this.successfulExecutions.value = this.successfulExecutions.value + 1
       return new ExecuteResult(true, 'Swap completed')
     } else {
-      this.totalExecutions.value = this.totalExecutions.value + 1
       return new ExecuteResult(false, 'Swap failed')
     }
   }
@@ -222,55 +220,26 @@ export class TinymanLimitOrderAdapter extends Contract {
   /**
    * Get adapter metadata
    */
-  getMetadata(): {
-    name: string
-    description: string
-    category: string
-    version: string
-  } {
-    return {
-      name: 'Tinyman Limit Order',
-      description: 'Execute limit orders on Tinyman DEX when price reaches target',
-      category: 'swap',
-      version: '1.0.0',
-    }
+  getMetadata(): AdapterMetadata {
+    return new AdapterMetadata(
+      'Tinyman Limit Order',
+      'Execute limit orders on Tinyman DEX when price reaches target',
+      'swap',
+      '1.0.0'
+    )
   }
 
-  /**
-   * Get adapter statistics
-   */
-  getStats(): {
-    totalExecutions: uint64
-    successfulExecutions: uint64
-    successRate: uint64
-  } {
-    let successRate: uint64 = 0
-    if (this.totalExecutions.value > 0) {
-      successRate = (this.successfulExecutions.value * 100) / this.totalExecutions.value
-    }
-
-    return {
-      totalExecutions: this.totalExecutions.value,
-      successfulExecutions: this.successfulExecutions.value,
-      successRate: successRate,
-    }
-  }
+  // getStats() is now inherited from BaseAdapter!
 
   /**
    * Update max slippage (admin only)
    */
   updateMaxSlippage(newMaxSlippageBps: uint16): void {
-    assert(this.txn.sender === this.admin.value, 'Only admin')
+    this.requireAdmin() // Use BaseAdapter method
     assert(newMaxSlippageBps <= 1000, 'Slippage too high') // Max 10%
     this.maxSlippageBps.value = newMaxSlippageBps
+    log('MaxSlippageUpdated:' + itoa(newMaxSlippageBps))
   }
 
-  /**
-   * Emergency pause (admin only)
-   * In production, this would disable execution
-   */
-  pause(): void {
-    assert(this.txn.sender === this.admin.value, 'Only admin')
-    log('AdapterPaused')
-  }
+  // pause(), unpause(), transferAdmin() are inherited from BaseAdapter!
 }

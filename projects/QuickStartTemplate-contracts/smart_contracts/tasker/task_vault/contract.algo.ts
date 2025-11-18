@@ -117,14 +117,19 @@ export class TaskVault extends Contract {
 
   /**
    * Execute action through adapter
-   * This is the core execution logic called by ExecutorHub
+   * This is the IMPROVED implementation using getTokenRequirements()
+   *
+   * KEY IMPROVEMENT: We no longer need to parse adapter-specific params!
+   * Instead, we ask the adapter what tokens it needs via getTokenRequirements().
    *
    * Flow:
    * 1. Verify caller is authorized (TaskFactory/ExecutorHub)
-   * 2. Call adapter.canExecute() to check conditions
-   * 3. If true, call adapter.execute() to perform action
-   * 4. Calculate and distribute rewards
-   * 5. Return execution result
+   * 2. Call adapter.getTokenRequirements() to know what tokens are needed
+   * 3. Approve/transfer required tokens to adapter
+   * 4. Call adapter.canExecute() to check conditions
+   * 5. If true, call adapter.execute() to perform action
+   * 6. Calculate and distribute rewards
+   * 7. Return execution result
    */
   executeAction(
     executorAddress: Address,
@@ -138,25 +143,50 @@ export class TaskVault extends Contract {
     // Verify action parameters match hash
     assert(sha256(actionParams) === actionParamsHash, 'Action params mismatch')
 
-    // TODO: Call adapter.canExecute() via inner transaction
-    // For now, assume conditions are met
+    // STEP 1: Get token requirements from adapter
+    // This is the KEY IMPROVEMENT - adapter declares what it needs!
+    // TODO: Implement via inner transaction call to adapter.getTokenRequirements(actionParams)
+    // const requirements = adapterAppId.call.getTokenRequirements(actionParams)
+
+    // For now, placeholder - in production this would be from adapter
+    // const requirements: TokenRequirement[] = [
+    //   { assetId: 0, amount: 1000000, isInput: true }  // 1 ALGO input
+    // ]
+
+    // STEP 2: Handle token approvals/transfers based on requirements
+    // for (const req of requirements) {
+    //   if (req.isInput) {
+    //     // Ensure vault has sufficient balance
+    //     // For ALGO: check this.app.address.balance
+    //     // For ASA: query asset balance
+    //
+    //     // Transfer to adapter if needed (adapter may pull directly)
+    //   }
+    // }
+
+    // STEP 3: Call adapter.canExecute() via inner transaction
+    // TODO: Implement via inner transaction
     const canExecute = true
 
     if (!canExecute) {
       return new ExecutionResult(false, 'Conditions not met', 0)
     }
 
-    // TODO: Call adapter.execute() via inner transaction
-    // This would perform the actual action (swap, transfer, etc.)
+    // STEP 4: Call adapter.execute(vaultAddress, actionParams) via inner transaction
+    // TODO: Implement via inner transaction
+    // sendMethodCall({
+    //   applicationID: adapterAppId,
+    //   methodArgs: [this.app.address, actionParams],
+    //   onCompletion: OnCompletion.NoOp,
+    // })
     const gasUsed: uint64 = 5000 // Placeholder
 
+    // STEP 5: Calculate reward
     // TODO: Call RewardManager to calculate reward
     // const rewardAmount = RewardManager.calculateReward(taskReward, gasUsed, executorReputation)
-
-    // For now, use placeholder reward
     const rewardAmount: uint64 = 1000000 // 0.001 ALGO
 
-    // Send reward to executor
+    // STEP 6: Send reward to executor
     if (this.primaryAssetId.value === 0) {
       // ALGO reward
       sendPayment({
