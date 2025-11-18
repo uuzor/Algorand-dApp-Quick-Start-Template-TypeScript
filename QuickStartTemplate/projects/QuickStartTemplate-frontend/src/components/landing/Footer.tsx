@@ -10,7 +10,7 @@ export default function Footer() {
           {/* Brand */}
           <div className="md:col-span-1">
             <motion.div
-              className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent mb-4"
+              className="text-2xl font-bold bg-gradient-to-r from-yellow-400 to-pink-400 bg-clip-text text-transparent mb-4"
               whileHover={{ scale: 1.05 }}
             >
               TaskerOnChain
@@ -165,7 +165,7 @@ export default function Footer() {
             whileHover={{ scale: 1.05 }}
           >
             <span className="text-gray-400 text-sm">Built on</span>
-            <span className="font-semibold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+            <span className="font-semibold bg-gradient-to-r from-yellow-400 to-pink-400 bg-clip-text text-transparent">
               Algorand
             </span>
           </motion.div>

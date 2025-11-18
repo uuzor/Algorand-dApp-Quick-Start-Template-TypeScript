@@ -4,17 +4,17 @@ import { Link } from 'react-router-dom'
 export default function Hero() {
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Animated Background Gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+      {/* Animated Background - Black to Dark Grey */}
+      <div className="absolute inset-0 bg-gradient-to-br from-black via-zinc-900 to-neutral-900">
         <motion.div
-          className="absolute inset-0 opacity-30"
+          className="absolute inset-0 opacity-20"
           animate={{
             background: [
-              'radial-gradient(circle at 0% 0%, rgba(120, 119, 198, 0.3) 0%, transparent 50%)',
-              'radial-gradient(circle at 100% 100%, rgba(74, 86, 226, 0.3) 0%, transparent 50%)',
-              'radial-gradient(circle at 0% 100%, rgba(120, 119, 198, 0.3) 0%, transparent 50%)',
-              'radial-gradient(circle at 100% 0%, rgba(74, 86, 226, 0.3) 0%, transparent 50%)',
-              'radial-gradient(circle at 0% 0%, rgba(120, 119, 198, 0.3) 0%, transparent 50%)',
+              'radial-gradient(circle at 0% 0%, rgba(250, 204, 21, 0.1) 0%, transparent 50%)',
+              'radial-gradient(circle at 100% 100%, rgba(236, 72, 153, 0.1) 0%, transparent 50%)',
+              'radial-gradient(circle at 0% 100%, rgba(250, 204, 21, 0.1) 0%, transparent 50%)',
+              'radial-gradient(circle at 100% 0%, rgba(236, 72, 153, 0.1) 0%, transparent 50%)',
+              'radial-gradient(circle at 0% 0%, rgba(250, 204, 21, 0.1) 0%, transparent 50%)',
             ],
           }}
           transition={{
@@ -27,10 +27,10 @@ export default function Hero() {
 
       {/* Floating Particles */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(20)].map((_, i) => (
+        {[...Array(15)].map((_, i) => (
           <motion.div
             key={i}
-            className="absolute w-2 h-2 bg-white rounded-full opacity-20"
+            className={`absolute w-1 h-1 rounded-full opacity-30 ${i % 2 === 0 ? 'bg-yellow-400' : 'bg-pink-400'}`}
             initial={{
               x: Math.random() * window.innerWidth,
               y: Math.random() * window.innerHeight,
@@ -65,7 +65,7 @@ export default function Hero() {
           </motion.h1>
 
           <motion.div
-            className="text-xl md:text-2xl lg:text-3xl text-blue-200 mb-4"
+            className="text-xl md:text-2xl lg:text-3xl text-gray-400 mb-4"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
@@ -74,7 +74,7 @@ export default function Hero() {
           </motion.div>
 
           <motion.p
-            className="text-lg md:text-xl text-gray-300 mb-8 max-w-3xl mx-auto"
+            className="text-lg md:text-xl text-gray-500 mb-8 max-w-3xl mx-auto"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
@@ -91,7 +91,7 @@ export default function Hero() {
           >
             <Link to="/app">
               <motion.button
-                className="px-8 py-4 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-full text-lg font-semibold shadow-lg hover:shadow-xl transition-shadow"
+                className="px-8 py-4 bg-yellow-400 text-black rounded-full text-lg font-semibold shadow-lg hover:shadow-2xl hover:bg-yellow-300 transition-all"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -103,7 +103,7 @@ export default function Hero() {
               onClick={() => {
                 document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })
               }}
-              className="px-8 py-4 bg-white/10 backdrop-blur-sm text-white rounded-full text-lg font-semibold border border-white/20 hover:bg-white/20 transition-colors"
+              className="px-8 py-4 bg-white/5 backdrop-blur-sm text-white rounded-full text-lg font-semibold border border-white/10 hover:bg-white/10 hover:border-pink-400/30 transition-all"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -117,17 +117,17 @@ export default function Hero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 1 }}
           >
-            <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
-              <div className="text-4xl font-bold text-purple-400 mb-2">500x</div>
-              <div className="text-gray-300">Cheaper than Ethereum</div>
+            <div className="bg-zinc-900/50 backdrop-blur-sm rounded-2xl p-6 border border-zinc-800 hover:border-yellow-400/30 transition-colors">
+              <div className="text-4xl font-bold text-yellow-400 mb-2">500x</div>
+              <div className="text-gray-400">Cheaper than Ethereum</div>
             </div>
-            <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
-              <div className="text-4xl font-bold text-blue-400 mb-2">3.3s</div>
-              <div className="text-gray-300">Block Finality</div>
+            <div className="bg-zinc-900/50 backdrop-blur-sm rounded-2xl p-6 border border-zinc-800 hover:border-pink-400/30 transition-colors">
+              <div className="text-4xl font-bold text-pink-400 mb-2">3.3s</div>
+              <div className="text-gray-400">Block Finality</div>
             </div>
-            <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
-              <div className="text-4xl font-bold text-indigo-400 mb-2">100%</div>
-              <div className="text-gray-300">Decentralized</div>
+            <div className="bg-zinc-900/50 backdrop-blur-sm rounded-2xl p-6 border border-zinc-800 hover:border-yellow-400/30 transition-colors">
+              <div className="text-4xl font-bold text-yellow-400 mb-2">100%</div>
+              <div className="text-gray-400">Decentralized</div>
             </div>
           </motion.div>
         </motion.div>
@@ -138,7 +138,7 @@ export default function Hero() {
           animate={{ y: [0, 10, 0] }}
           transition={{ duration: 2, repeat: Infinity }}
         >
-          <svg className="w-6 h-6 text-white/50" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="w-6 h-6 text-gray-600" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
             <path d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
           </svg>
         </motion.div>
